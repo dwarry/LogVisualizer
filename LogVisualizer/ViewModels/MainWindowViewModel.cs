@@ -5,11 +5,14 @@ using System.Reactive;
 using System.Reactive.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 using LogVisualizer.Domain;
 using OxyPlot;
 using OxyPlot.Axes;
 using OxyPlot.Series;
 using ReactiveUI;
+using ReactiveUI.Fody;
+using ReactiveUI.Fody.Helpers;
 
 namespace LogVisualizer.ViewModels
 {
@@ -20,11 +23,11 @@ namespace LogVisualizer.ViewModels
 
         public MainWindowViewModel()
         {
-            DateTime? currentTimestamp = null; 
+            DateTime? currentTimestamp = null;
 
             this.WhenAnyValue(x => x.CurrentLevel,
                               lvl => _tree.CountsAtLevel(lvl, currentTimestamp).ToList().AsReadOnly())
-                .ToProperty(this, x => x.Data, out _data);
+                .ToPropertyEx(this, x => x.Data);
 
             var canZoomIn = this.WhenAnyValue(x => x.CurrentLevel,
                                              lvl => lvl != TimeLineTreeLevel.Millisecond
@@ -37,7 +40,7 @@ namespace LogVisualizer.ViewModels
                     CurrentLevel = CurrentLevel.NextLevel();
                 },
                 canZoomIn);
-            
+
 
             var canZoomOut = this.WhenAnyValue(x => x.CurrentLevel,
                               lvl => lvl != TimeLineTreeLevel.Year);
@@ -52,7 +55,7 @@ namespace LogVisualizer.ViewModels
 
             this.WhenAnyValue(x => x.Data)
                 .Select(DeriveDateRange)
-                .ToProperty(this, x => x.DateRange, out _dateRange);
+                .ToPropertyEx(this, x => x.DateRange);
         }
 
 
@@ -63,7 +66,7 @@ namespace LogVisualizer.ViewModels
             var lastTimestamp = data.LastOrDefault()?.Date ?? DateTime.UtcNow;
 
             DateTime minDate, maxDate;
-   
+
 
             switch (CurrentLevel)
             {
@@ -108,32 +111,25 @@ namespace LogVisualizer.ViewModels
             return Tuple.Create(minDate, maxDate);
         }
 
-        private TimeLineTreeLevel _currentLevel = TimeLineTreeLevel.Month;
 
+        [Reactive]
         public TimeLineTreeLevel CurrentLevel
         {
-            get => _currentLevel;
-            set => this.RaiseAndSetIfChanged(ref _currentLevel, value);
+            get; set;
         }
 
 
-        private DateTime? _selectedTimestamp;
-
+        [Reactive]
         public DateTime? SelectedTimestamp
         {
-            get => _selectedTimestamp;
-            set => this.RaiseAndSetIfChanged(ref _selectedTimestamp, value);
+            get; set;
         }
 
 
-        private ObservableAsPropertyHelper<IReadOnlyCollection<TimeLineCount>> _data;
-
-        public IReadOnlyCollection<TimeLineCount> Data => _data.Value;
+        public extern IReadOnlyCollection<TimeLineCount> Data { [ObservableAsProperty] get; }
 
 
-        private ObservableAsPropertyHelper<Tuple<DateTime, DateTime>> _dateRange;
-
-        public Tuple<DateTime, DateTime> DateRange => _dateRange.Value;
+        public extern Tuple<DateTime, DateTime> DateRange { [ObservableAsProperty] get; }
 
 
         public ReactiveCommand<Unit, Unit> ZoomIn { get; }

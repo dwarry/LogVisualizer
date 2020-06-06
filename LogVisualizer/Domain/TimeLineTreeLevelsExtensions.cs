@@ -25,5 +25,64 @@ namespace LogVisualizer.Domain
                     throw new ArgumentOutOfRangeException(nameof(self), SR.Error_unknown_value);
             }
         }
+
+        public static bool HasNextLevel(this TimeLineTreeLevel self) => self != TimeLineTreeLevel.Millisecond;
+
+        public static bool HasPrevLevel(this TimeLineTreeLevel self) => self != TimeLineTreeLevel.Year;
+
+        public static TimeLineTreeLevel NextLevel(this TimeLineTreeLevel self)
+        {
+            switch (self)
+            {
+                case TimeLineTreeLevel.Year:
+                    return TimeLineTreeLevel.Month;
+
+                case TimeLineTreeLevel.Month:
+                    return TimeLineTreeLevel.Day;
+
+                case TimeLineTreeLevel.Day:
+                    return TimeLineTreeLevel.Hour;
+
+                case TimeLineTreeLevel.Hour:
+                    return TimeLineTreeLevel.Minute;
+
+                case TimeLineTreeLevel.Minute:
+                    return TimeLineTreeLevel.Second;
+
+                case TimeLineTreeLevel.Second:
+                    return TimeLineTreeLevel.Millisecond;
+
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(self), "Millisecond is the lowest level");
+            }
+        }
+
+        public static TimeLineTreeLevel PreviousLevel(this TimeLineTreeLevel self)
+        {
+            switch (self)
+            {
+                case TimeLineTreeLevel.Month:
+                    return TimeLineTreeLevel.Year;
+
+                case TimeLineTreeLevel.Day:
+                    return TimeLineTreeLevel.Month;
+
+                case TimeLineTreeLevel.Hour:
+                    return TimeLineTreeLevel.Day;
+
+                case TimeLineTreeLevel.Minute:
+                    return TimeLineTreeLevel.Hour;
+
+                case TimeLineTreeLevel.Second:
+                    return TimeLineTreeLevel.Minute;
+                    
+                case TimeLineTreeLevel.Millisecond:
+                    return TimeLineTreeLevel.Second;
+                   
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(self), "No previous value");
+            }
+        }
+        
     }
 }

@@ -4,10 +4,35 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:mah="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
+        xmlns:oxy="http://oxyplot.org/wpf"
+        xmlns:ctrl="urn:controlzex"
         xmlns:local="clr-namespace:LogVisualizer"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
-    <Grid>
-        
-    </Grid>
+        Title="Log Visualizer" Height="450" Width="800" >
+    <DockPanel LastChildFill="True">
+        <Menu DockPanel.Dock="Top">
+            <MenuItem Header="File">
+                <MenuItem Header="Open..." x:Name="FileOpen"></MenuItem>
+            </MenuItem>
+        </Menu>
+        <ctrl:TabControlEx x:Name="tabs">
+            <TabItem x:Name="ChartTab" Header="Chart">
+                <DockPanel LastChildFill="True">
+                    <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" HorizontalAlignment="Center">
+                        <Button x:Name="ZoomIn">+</Button>
+                        <Button x:Name="ZoomOut">-</Button>
+                    </StackPanel>
+                    <oxy:PlotView x:Name="TimeLine" Background="AliceBlue"></oxy:PlotView>
+                </DockPanel>
+            </TabItem>
+            <TabItem Header="Log">
+                <DockPanel LastChildFill="True">
+                    <TextBlock x:Name="LogContents"></TextBlock>
+                </DockPanel>
+            </TabItem>
+        </ctrl:TabControlEx>
+        <!--<mah:ProgressRing x:Name="Busy" Foreground="{DynamicResource Accent}" Visibility="Hidden"></mah:ProgressRing>-->
+    </DockPanel>
+
+
 </mah:MetroWindow>

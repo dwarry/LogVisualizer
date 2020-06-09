@@ -1,12 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using LogVisualizer.DialogServices;
 using LogVisualizer.Domain;
+using LogVisualizer.LogFileParsers;
 using OxyPlot;
 using OxyPlot.Axes;
 using OxyPlot.Series;
@@ -18,38 +21,64 @@ namespace LogVisualizer.ViewModels
 {
     public class MainWindowViewModel : ReactiveObject
     {
+        private readonly IDialogServices _dialogServices;
+        
+        private readonly TreeBuilderFactory _treeBuilderFactory;
 
-        private TimelineTree _tree;
-
-        public MainWindowViewModel()
+        public MainWindowViewModel(IDialogServices dialogServices, TreeBuilderFactory treeBuilderFactory)
         {
+            if (dialogServices == null)
+            {
+                throw new ArgumentNullException(nameof(dialogServices));
+            }
+
+            if (treeBuilderFactory == null)
+            {
+                throw new ArgumentNullException(nameof(treeBuilderFactory));
+            }
+
+            _dialogServices = dialogServices;
+            
+            _treeBuilderFactory = treeBuilderFactory;
+
             DateTime? currentTimestamp = null;
 
             this.WhenAnyValue(x => x.CurrentLevel,
-                              lvl => _tree.CountsAtLevel(lvl, currentTimestamp).ToList().AsReadOnly())
+                              x=>x.Tree,
+                              (lvl, t) => (t != null ? t.CountsAtLevel(lvl, currentTimestamp) 
+                                                     : Enumerable.Empty<TimeLineCount>())
+                                                     .ToList()
+                                                     .AsReadOnly())
                 .ToPropertyEx(this, x => x.Data);
 
-            var canZoomIn = this.WhenAnyValue(x => x.CurrentLevel,
-                                             lvl => lvl != TimeLineTreeLevel.Millisecond
-                                                    && SelectedTimestamp.HasValue);
+            OpenLogFile = ReactiveCommand.Create(SelectAndOpenLogFile);
+
+
+            var canZoomIn = this.WhenAnyValue(x => x.CurrentLevel, x => x.SelectedTimestamp,
+                                             (lvl, ts) => lvl != TimeLineTreeLevel.Millisecond
+                                                          && ts.HasValue)
+                .DistinctUntilChanged();
 
             ZoomIn = ReactiveCommand.Create(
                 () =>
                 {
                     currentTimestamp = SelectedTimestamp;
                     CurrentLevel = CurrentLevel.NextLevel();
+                    SelectedTimestamp = null;
                 },
                 canZoomIn);
 
 
             var canZoomOut = this.WhenAnyValue(x => x.CurrentLevel,
-                              lvl => lvl != TimeLineTreeLevel.Year);
+                                               lvl => lvl != TimeLineTreeLevel.Year)
+                .DistinctUntilChanged();
 
             ZoomOut = ReactiveCommand.Create(
                 () =>
                 {
 
                     CurrentLevel = CurrentLevel.PreviousLevel();
+                    SelectedTimestamp = null;
                 },
                 canZoomOut);
 
@@ -58,15 +87,52 @@ namespace LogVisualizer.ViewModels
                 .ToPropertyEx(this, x => x.DateRange);
         }
 
+        private void SelectAndOpenLogFile()
+        {
+            var path = _dialogServices.ShowOpenFileDialog();
+
+            if(path != null)
+            {
+                IsBusy = true;
+                try
+                {
+                    var treeBuilder = _treeBuilderFactory.CreateTreeBuilderForLogFile(path);
+
+                    using (var stream = new FileStream(path, FileMode.Open, FileAccess.Read))
+                    {
+                        Tree = treeBuilder.ParseDataAndBuildTree(stream);
+                        CurrentLevel = TimeLineTreeLevel.Year;
+                        SelectedTimestamp = null;
+                    }
+
+                }
+                finally
+                {
+                    IsBusy = false;
+                }
+            }
+        }
+
 
         private Tuple<DateTime, DateTime> DeriveDateRange(IReadOnlyCollection<TimeLineCount> data)
         {
-            var firstTimestamp = data.FirstOrDefault()?.Date ?? DateTime.UtcNow;
+            DateTime firstTimestamp, lastTimestamp;
 
-            var lastTimestamp = data.LastOrDefault()?.Date ?? DateTime.UtcNow;
+            if (data.Count == 0)
+            {
+                firstTimestamp = DateTime.UtcNow;
+
+                lastTimestamp = firstTimestamp;
+            }
+            else
+            {
+
+                firstTimestamp = data.First().Date;
+
+                lastTimestamp = data.Last().Date;
+            }
 
             DateTime minDate, maxDate;
-
 
             switch (CurrentLevel)
             {
@@ -75,8 +141,8 @@ namespace LogVisualizer.ViewModels
                     maxDate = lastTimestamp.AddYears(1);
                     break;
                 case TimeLineTreeLevel.Month:
-                    minDate = new DateTime(firstTimestamp.Year - 1, 12, 1);
-                    maxDate = new DateTime(lastTimestamp.Year + 1, 1, 1);
+                    minDate = new DateTime(firstTimestamp.Year, 1, 1);
+                    maxDate = new DateTime(lastTimestamp.Year, 12, 31);
                     break;
 
                 case TimeLineTreeLevel.Day:
@@ -111,6 +177,12 @@ namespace LogVisualizer.ViewModels
             return Tuple.Create(minDate, maxDate);
         }
 
+        [Reactive]
+        public bool IsBusy { get; private set; }
+
+        [Reactive]
+        private TimelineTree Tree { get; set; }
+
 
         [Reactive]
         public TimeLineTreeLevel CurrentLevel
@@ -131,6 +203,8 @@ namespace LogVisualizer.ViewModels
 
         public extern Tuple<DateTime, DateTime> DateRange { [ObservableAsProperty] get; }
 
+
+        public ReactiveCommand<Unit, Unit> OpenLogFile { get; }
 
         public ReactiveCommand<Unit, Unit> ZoomIn { get; }
 

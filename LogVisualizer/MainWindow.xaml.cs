@@ -21,6 +21,9 @@ using OxyPlot;
 using OxyPlot.Axes;
 using OxyPlot.Series;
 using ReactiveUI;
+using LogVisualizer.DialogServices;
+using LogVisualizer.LogFileParsers;
+using System.Reactive;
 
 namespace LogVisualizer
 {
@@ -30,7 +33,7 @@ namespace LogVisualizer
     public partial class MainWindow : IViewFor<MainWindowViewModel>
     {
         public static readonly DependencyProperty ViewModelProperty =
-            DependencyProperty.Register(nameof(MainWindowViewModel), typeof(MainWindowViewModel), typeof(MainWindow));
+            DependencyProperty.Register(nameof(ViewModel), typeof(MainWindowViewModel), typeof(MainWindow));
 
         private DateTimeAxis _xAxis = new DateTimeAxis();
 
@@ -47,61 +50,76 @@ namespace LogVisualizer
             StrokeThickness = 4,
         };
 
+        private LinearBarSeries _selection = new LinearBarSeries
+        {
+            RenderInLegend = false,
+            StrokeColor = OxyColors.Red,
+            FillColor = OxyColors.DarkRed,
+            BarWidth = 10,
+            Selectable = false,
+            StrokeThickness = 4
+        };
+
         public MainWindow()
         {
             InitializeComponent();
 
-            InitializePlotModel();
+            ViewModel = new MainWindowViewModel(new WpfDialogServices(), new TreeBuilderFactory());
 
             DataContext = ViewModel;
+
+            InitializePlotModel();
 
             this.WhenActivated(d => {
                 var mouseDown = Observable.FromEventPattern<OxyMouseDownEventArgs>(_series, nameof(MouseDown));
 
                 mouseDown
                     .Where(x => x.EventArgs.ClickCount == 1)
-                    .Select(x => Axis.InverseTransform(x.EventArgs.Position, _xAxis, _yAxis).X)
+                    .Select(x => x.EventArgs.Position)
                     .Subscribe(SelectClosestPoint)
                     .DisposeWith(d);
 
                 mouseDown
                     .Where(x => x.EventArgs.ClickCount == 2)
-                    .InvokeCommand(ViewModel.ZoomIn)
+                    .Select(args => Unit.Default)
+                    .InvokeCommand(this, x => x.ViewModel.ZoomIn)
                     .DisposeWith(d);
+
+                this.BindCommand(this.ViewModel, 
+                    vm => vm.OpenLogFile, 
+                    v => v.FileOpen);
+
+                //this.Bind(this.ViewModel, 
+                //    vm => vm.IsBusy, 
+                //    v => v.Busy.Visibility, 
+                //    b => b ? Visibility.Visible : Visibility.Hidden, 
+                //    v => v == Visibility.Visible);
 
                 //var seriesSelectionChanged = Observable.FromEventPattern<EventArgs>(_series, nameof(_series.SelectionChanged));
 
                 //seriesSelectionChanged
                 //    .Subscribe(x => SetViewModelSelectedTimestamp())
                 //    .DisposeWith(d);
+
+                this.BindCommand(this.ViewModel, vm => vm.ZoomIn, vw => vw.ZoomIn);
+                this.BindCommand(this.ViewModel, vm => vm.ZoomOut, vw => vw.ZoomOut);
+
+                ViewModel.WhenAnyValue(x => x.DateRange).Subscribe(_ => SetupSeries()).DisposeWith(d);
             });
         }
 
-        private void SelectClosestPoint(double x)
+        private void SelectClosestPoint(ScreenPoint p)
         {
-            var selectedIndex = _series.Points.Count - 1;
+            var thr = _series.GetNearestPoint(p, false);
 
-            for(int i = 0; i < _series.Points.Count; ++i)
+            if(thr != null)
             {
-                var p = _series.Points[i];
-                if (p.X > x)
-                {
-                    if (i == 0)
-                    {
-                        selectedIndex = 0;
-                        break;
-                    }
-                    var prevPoint = _series.Points[i - 1];
-                    selectedIndex = (p.X - x) <= (x - prevPoint.X) ? i : i - 1;
-                    break;
-                }
+                var ts = DateTimeAxis.ToDateTime(thr.DataPoint.X);
+                ViewModel.SelectedTimestamp = ts;
+                _selection.Points.Clear();
+                _selection.Points.Add(thr.DataPoint);
+                PlotModel.InvalidatePlot(false);
             }
-
-            _series.SelectItem(selectedIndex);
-
-            var selectedX = _series.Points[selectedIndex].X;
-            var ts = DateTimeAxis.ToDateTime(selectedX);
-            ViewModel.SelectedTimestamp = ts;
         }
 
 
@@ -111,6 +129,9 @@ namespace LogVisualizer
             PlotModel.Axes.Add(_xAxis);
             PlotModel.Axes.Add(_yAxis);
             PlotModel.Series.Add(_series);
+            PlotModel.Series.Add(_selection);
+
+            TimeLine.Model = PlotModel;
         }
 
         public PlotModel PlotModel { get; } = new PlotModel
@@ -153,6 +174,8 @@ namespace LogVisualizer
             _series.Points.Clear();
 
             _series.Points.AddRange(ViewModel.Data.Select(x => DateTimeAxis.CreateDataPoint(x.Date, x.Count)));
+
+            _selection.Points.Clear();
 
             PlotModel.InvalidatePlot(true);
         }

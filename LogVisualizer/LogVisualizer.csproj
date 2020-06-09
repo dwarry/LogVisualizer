@@ -115,6 +115,10 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="DialogServices\IDialogServices.cs" />
+    <Compile Include="LogFileParsers\EventLogXmlTreeBuilder.cs" />
+    <Compile Include="LogFileParsers\TreeBuilderFactory.cs" />
+    <Compile Include="LogFileParsers\TextFileFileLoader.cs" />
     <Compile Include="SR.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -160,6 +164,7 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>SR.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+    <Compile Include="LogFileParsers\ITimeLineTreeBuilder.cs" />
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>

@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace LogVisualizer.Domain
 {
 
-    public class TimeLineCount
+    public struct TimeLineCount
     {
         public TimeLineCount(DateTime date, int count, long offset)
         {

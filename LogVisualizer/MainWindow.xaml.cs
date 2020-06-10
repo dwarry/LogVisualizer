@@ -133,23 +133,28 @@ namespace LogVisualizer
             
         };
 
-        private static readonly Dictionary<TimeLineTreeLevel, (string, DateTimeIntervalType)> XAxisSettingsByLevel =
-            new Dictionary<TimeLineTreeLevel, (string, DateTimeIntervalType)> { 
-                [TimeLineTreeLevel.Year] = ("yyyy", DateTimeIntervalType.Years),
-                [TimeLineTreeLevel.Month] = ("yyyy-MM", DateTimeIntervalType.Months),
-                [TimeLineTreeLevel.Day] = ("yyyy-MM-dd", DateTimeIntervalType.Days),
-                [TimeLineTreeLevel.Hour] = ("HH", DateTimeIntervalType.Hours),
-                [TimeLineTreeLevel.Minute] = ("HH:mm", DateTimeIntervalType.Minutes),
-                [TimeLineTreeLevel.Second] = ("HH:mm:ss", DateTimeIntervalType.Seconds),
-                [TimeLineTreeLevel.Millisecond] = ("ss.fff", DateTimeIntervalType.Milliseconds)
+        private static readonly Dictionary<TimeLineTreeLevel, (string, DateTimeIntervalType, string)> XAxisAndSubtitleSettingsByLevel =
+            new Dictionary<TimeLineTreeLevel, (string, DateTimeIntervalType, string)> {
+                [TimeLineTreeLevel.Year] = ("yyyy", DateTimeIntervalType.Years, null),
+                [TimeLineTreeLevel.Month] = ("yyyy-MM", DateTimeIntervalType.Months, "yyyy"),
+                [TimeLineTreeLevel.Day] = ("yyyy-MM-dd", DateTimeIntervalType.Days, "yyyy-MM"),
+                [TimeLineTreeLevel.Hour] = ("HH", DateTimeIntervalType.Hours, "yyyy-MM-dd"),
+                [TimeLineTreeLevel.Minute] = ("HH:mm", DateTimeIntervalType.Minutes, "yyyy-MM-dd HH"),
+                [TimeLineTreeLevel.Second] = ("HH:mm:ss", DateTimeIntervalType.Seconds, "yyyy-MM-dd HH:mm"),
+                [TimeLineTreeLevel.Millisecond] = ("ss.fff", DateTimeIntervalType.Milliseconds, "yyyy-MM-dd HH:mm:ss")
             };
+
+
 
         private void SetupSeries()
         {
             var (minDate, maxDate) = ViewModel.DateRange;
 
-            var (format, intervalType) = XAxisSettingsByLevel[ViewModel.CurrentLevel];
+            var (format, intervalType, subtitleFormat) = XAxisAndSubtitleSettingsByLevel[ViewModel.CurrentLevel];
 
+            PlotModel.Subtitle = subtitleFormat != null && ViewModel.ContextTimestamp.HasValue 
+                ? ViewModel.ContextTimestamp.Value.ToString(subtitleFormat)
+                : "";
 
             _xAxis.Minimum = DateTimeAxis.ToDouble(minDate);
 
@@ -161,6 +166,8 @@ namespace LogVisualizer
 
             _series.Title = "Events per " + ViewModel.CurrentLevel.ToString().ToLowerInvariant();
 
+            
+
             _series.ClearSelection();
 
             _series.Points.Clear();
@@ -170,8 +177,8 @@ namespace LogVisualizer
             _selection.Points.Clear();
 
             PlotModel.InvalidatePlot(true);
+        
         }
-
 
         public MainWindowViewModel ViewModel
         {

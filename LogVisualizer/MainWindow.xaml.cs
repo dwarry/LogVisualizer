@@ -24,6 +24,7 @@ using ReactiveUI;
 using LogVisualizer.DialogServices;
 using LogVisualizer.LogFileParsers;
 using System.Reactive;
+using System.Collections;
 
 namespace LogVisualizer
 {
@@ -64,7 +65,7 @@ namespace LogVisualizer
         {
             InitializeComponent();
 
-            ViewModel = new MainWindowViewModel(new WpfDialogServices(), new TreeBuilderFactory());
+            ViewModel = new MainWindowViewModel(new WpfDialogServices(), new LogParserFactory());
 
             DataContext = ViewModel;
 
@@ -89,17 +90,8 @@ namespace LogVisualizer
                     vm => vm.OpenLogFile, 
                     v => v.FileOpen);
 
-                //this.Bind(this.ViewModel, 
-                //    vm => vm.IsBusy, 
-                //    v => v.Busy.Visibility, 
-                //    b => b ? Visibility.Visible : Visibility.Hidden, 
-                //    v => v == Visibility.Visible);
-
-                //var seriesSelectionChanged = Observable.FromEventPattern<EventArgs>(_series, nameof(_series.SelectionChanged));
-
-                //seriesSelectionChanged
-                //    .Subscribe(x => SetViewModelSelectedTimestamp())
-                //    .DisposeWith(d);
+                
+                this.Bind(ViewModel, vm => (IEnumerable)vm.Lines, v => v.LogItems.ItemsSource);
 
                 this.BindCommand(this.ViewModel, vm => vm.ZoomIn, vw => vw.ZoomIn);
                 this.BindCommand(this.ViewModel, vm => vm.ZoomOut, vw => vw.ZoomOut);

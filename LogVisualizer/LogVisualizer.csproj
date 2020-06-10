@@ -116,9 +116,11 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="DialogServices\IDialogServices.cs" />
-    <Compile Include="LogFileParsers\EventLogXmlTreeBuilder.cs" />
-    <Compile Include="LogFileParsers\TreeBuilderFactory.cs" />
-    <Compile Include="LogFileParsers\TextFileFileLoader.cs" />
+    <Compile Include="Domain\LogEntry.cs" />
+    <Compile Include="Domain\LogLevel.cs" />
+    <Compile Include="LogFileParsers\EventLogXmlParser.cs" />
+    <Compile Include="LogFileParsers\LogParserFactory.cs" />
+    <Compile Include="LogFileParsers\TextLogFileParser.cs" />
     <Compile Include="SR.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -164,7 +166,7 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>SR.Designer.cs</LastGenOutput>
     </EmbeddedResource>
-    <Compile Include="LogFileParsers\ITimeLineTreeBuilder.cs" />
+    <Compile Include="LogFileParsers\ILogFileParser.cs" />
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>

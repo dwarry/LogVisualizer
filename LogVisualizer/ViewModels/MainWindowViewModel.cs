@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Reactive;
@@ -7,6 +8,7 @@ using System.Reactive.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using DynamicData.Binding;
 using LogVisualizer.DialogServices;
 using LogVisualizer.Domain;
 using LogVisualizer.LogFileParsers;
@@ -23,9 +25,9 @@ namespace LogVisualizer.ViewModels
     {
         private readonly IDialogServices _dialogServices;
         
-        private readonly TreeBuilderFactory _treeBuilderFactory;
+        private readonly LogParserFactory _logParseFactory;
 
-        public MainWindowViewModel(IDialogServices dialogServices, TreeBuilderFactory treeBuilderFactory)
+        public MainWindowViewModel(IDialogServices dialogServices, LogParserFactory treeBuilderFactory)
         {
             if (dialogServices == null)
             {
@@ -39,7 +41,7 @@ namespace LogVisualizer.ViewModels
 
             _dialogServices = dialogServices;
             
-            _treeBuilderFactory = treeBuilderFactory;
+            _logParseFactory = treeBuilderFactory;
 
             DateTime? currentTimestamp = null;
 
@@ -85,7 +87,46 @@ namespace LogVisualizer.ViewModels
             this.WhenAnyValue(x => x.Data)
                 .Select(DeriveDateRange)
                 .ToPropertyEx(this, x => x.DateRange);
+
+            this.WhenAnyValue(x => x.SelectedTimestamp)
+                .Throttle(TimeSpan.FromMilliseconds(500))
+                .DistinctUntilChanged()
+                .Select(x => this.ReadLines(x))
+                .ObserveOn(RxApp.MainThreadScheduler)
+                .Subscribe(lines =>
+                {
+                    using (Lines.SuspendNotifications())
+                    {
+                        Lines.Clear();
+                        Lines.AddRange(lines);
+                    }
+                });
+                
         }
+
+        private IReadOnlyList<LogEntry> ReadLines(DateTime? selection)
+        {
+
+            if(_path == null || !selection.HasValue)
+            {
+                return EmptyLines;
+            }
+
+            var parser = _logParseFactory.CreateParserForLogFile(_path);
+
+            var tlc = Data.First(x => x.Date == selection.Value);
+
+            using (var stream = new FileStream(_path, FileMode.Open, FileAccess.Read))
+            {
+                return parser.ReadEntries(stream, tlc.Offset, MaxLines);
+            }
+        }
+
+        public int MaxLines { get; set; } = 100;
+
+        private static readonly IReadOnlyList<LogEntry> EmptyLines = new List<LogEntry>(0).AsReadOnly();
+
+        private string _path;
 
         private void SelectAndOpenLogFile()
         {
@@ -96,7 +137,7 @@ namespace LogVisualizer.ViewModels
                 IsBusy = true;
                 try
                 {
-                    var treeBuilder = _treeBuilderFactory.CreateTreeBuilderForLogFile(path);
+                    var treeBuilder = _logParseFactory.CreateParserForLogFile(path);
 
                     using (var stream = new FileStream(path, FileMode.Open, FileAccess.Read))
                     {
@@ -104,7 +145,7 @@ namespace LogVisualizer.ViewModels
                         CurrentLevel = TimeLineTreeLevel.Year;
                         SelectedTimestamp = null;
                     }
-
+                    _path = path;
                 }
                 finally
                 {
@@ -203,6 +244,8 @@ namespace LogVisualizer.ViewModels
 
         public extern Tuple<DateTime, DateTime> DateRange { [ObservableAsProperty] get; }
 
+
+        public ObservableCollectionExtended<LogEntry> Lines { get; } = new ObservableCollectionExtended<LogEntry>();
 
         public ReactiveCommand<Unit, Unit> OpenLogFile { get; }
 

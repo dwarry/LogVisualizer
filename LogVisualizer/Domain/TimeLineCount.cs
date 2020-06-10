@@ -20,5 +20,7 @@ namespace LogVisualizer.Domain
         public DateTime Date { get; }
         public int Count { get; }
         public long Offset { get; }
+
+        public static readonly TimeLineCount Empty = new TimeLineCount(DateTime.MinValue, 0, 0);
     }
 }

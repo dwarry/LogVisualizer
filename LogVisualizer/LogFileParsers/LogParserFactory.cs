@@ -7,17 +7,17 @@ using System.Windows.Forms;
 
 namespace LogVisualizer.LogFileParsers
 {
-    public class TreeBuilderFactory
+    public class LogParserFactory
     {
-        public ITimeLineTreeBuilder CreateTreeBuilderForLogFile(string path)
+        public ILogFileParser CreateParserForLogFile(string path)
         {
             if (path.EndsWith(".xml"))
             {
-                return new EventLogXmlTreeBuilder();
+                return new EventLogXmlParser();
             }
             else
             {
-                return new TextLogFileTreeBuilder();
+                return new TextLogFileParser();
             }
         }
     }

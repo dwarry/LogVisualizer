@@ -60,7 +60,7 @@
                                     <DataTrigger Binding="{Binding Path=LogLevel}" Value="{x:Static dom:LogLevel.Warning}">
                                         <Setter Property="Background">
                                             <Setter.Value>
-                                                <SolidColorBrush Color="Goldenrod"></SolidColorBrush>
+                                                <SolidColorBrush Color="LightGoldenrodYellow"></SolidColorBrush>
                                             </Setter.Value>
                                         </Setter>
                                         <Setter Property="Foreground">
@@ -77,7 +77,7 @@
                                         </Setter>
                                         <Setter Property="Foreground">
                                             <Setter.Value>
-                                                <SolidColorBrush Color="Black"/>
+                                                <SolidColorBrush Color="LightYellow"/>
                                             </Setter.Value>
                                         </Setter>
                                     </DataTrigger>

@@ -91,7 +91,7 @@ namespace LogVisualizer
                     v => v.FileOpen);
 
                 
-                this.Bind(ViewModel, vm => (IEnumerable)vm.Lines, v => v.LogItems.ItemsSource);
+                this.OneWayBind(ViewModel, vm => (IEnumerable)vm.Lines, v => v.LogItems.ItemsSource);
 
                 this.BindCommand(this.ViewModel, vm => vm.ZoomIn, vw => vw.ZoomIn);
                 this.BindCommand(this.ViewModel, vm => vm.ZoomOut, vw => vw.ZoomOut);

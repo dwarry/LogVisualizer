@@ -18,7 +18,7 @@ namespace LogVisualizer.LogFileParsers
             RegexOptions.Compiled);
 
         private static readonly Regex _logLevelRegex = new Regex(
-            @"\s(?:INFO|WARN(?:ING)?|DEBUG|ERROR|FATAL)\s",
+            @"(?<=\s)(?:INFO|WARN(?:ING)?|DEBUG|ERROR|FATAL)(?=\s)",
             RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
 
@@ -134,18 +134,28 @@ namespace LogVisualizer.LogFileParsers
 
                     var m = _timestampRegex.Match(line);
 
-                    if (m.Success && !firstTimeThrough)
+                    if (m.Success)
                     {
-                        var nextEntry = new LogEntry(id, logLevel, messageBuilder.ToString());
+                        if (firstTimeThrough)
+                        {
+                            firstTimeThrough = false;
+                        }
+                        else
+                        {
+                            var nextEntry = new LogEntry(id, logLevel, messageBuilder.ToString());
 
-                        results.Append(nextEntry);
+                            results.Add(nextEntry);
+                        }
 
                         id = m.Value;
+
                         messageBuilder.Clear();
+                        
                         messageBuilder.AppendLine(line);
 
 
                         var logLevelMatch = _logLevelRegex.Match(line);
+                        
                         if (logLevelMatch.Success)
                         {
                             logLevel = ParseLogLevelMatch(logLevelMatch);
@@ -158,6 +168,7 @@ namespace LogVisualizer.LogFileParsers
                     else
                     {
                         firstTimeThrough = false;
+
                         messageBuilder.AppendLine(line);
                     }
                 }

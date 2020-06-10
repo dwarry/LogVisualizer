@@ -43,11 +43,9 @@ namespace LogVisualizer.ViewModels
             
             _logParseFactory = treeBuilderFactory;
 
-            DateTime? currentTimestamp = null;
-
             this.WhenAnyValue(x => x.CurrentLevel,
-                              x=>x.Tree,
-                              (lvl, t) => (t != null ? t.CountsAtLevel(lvl, currentTimestamp) 
+                              x =>  x.Tree,
+                              (lvl, t) => (t != null ? t.CountsAtLevel(lvl, ContextTimestamp)
                                                      : Enumerable.Empty<TimeLineCount>())
                                                      .ToList()
                                                      .AsReadOnly())
@@ -64,7 +62,7 @@ namespace LogVisualizer.ViewModels
             ZoomIn = ReactiveCommand.Create(
                 () =>
                 {
-                    currentTimestamp = SelectedTimestamp;
+                    ContextTimestamp = SelectedTimestamp;
                     CurrentLevel = CurrentLevel.NextLevel();
                     SelectedTimestamp = null;
                 },
@@ -144,6 +142,7 @@ namespace LogVisualizer.ViewModels
                         Tree = treeBuilder.ParseDataAndBuildTree(stream);
                         CurrentLevel = TimeLineTreeLevel.Year;
                         SelectedTimestamp = null;
+                        ContextTimestamp = null;
                     }
                     _path = path;
                 }
@@ -230,6 +229,9 @@ namespace LogVisualizer.ViewModels
         {
             get; set;
         }
+
+        [Reactive]
+        public DateTime? ContextTimestamp { get; private set; }
 
 
         [Reactive]

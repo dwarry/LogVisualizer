@@ -97,6 +97,16 @@ namespace LogVisualizer
                 this.BindCommand(this.ViewModel, vm => vm.ZoomOut, vw => vw.ZoomOut);
 
                 ViewModel.WhenAnyValue(x => x.DateRange).Subscribe(_ => SetupSeries()).DisposeWith(d);
+
+                TimeLine.Events().SizeChanged
+                .Throttle(TimeSpan.FromSeconds(0.1))
+                .ObserveOn(RxApp.MainThreadScheduler)
+                .Subscribe(x =>
+                {
+                    SetBarWidth();
+                    PlotModel.InvalidatePlot(false);
+                })
+                .DisposeWith(d);
             });
         }
 
@@ -148,6 +158,7 @@ namespace LogVisualizer
 
         private void SetupSeries()
         {
+
             var (minDate, maxDate) = ViewModel.DateRange;
 
             var (format, intervalType, subtitleFormat) = XAxisAndSubtitleSettingsByLevel[ViewModel.CurrentLevel];
@@ -176,8 +187,51 @@ namespace LogVisualizer
 
             _selection.Points.Clear();
 
+            SetBarWidth();
+
             PlotModel.InvalidatePlot(true);
         
+        }
+
+        private void SetBarWidth()
+        {
+            var w = TimeLine.ActualWidth;
+            int numberOfColumns = 100;
+            switch (ViewModel.CurrentLevel)
+            {
+                case TimeLineTreeLevel.Year:
+                    numberOfColumns = _series.Points.Count;
+                    break;
+                case TimeLineTreeLevel.Month:
+                    numberOfColumns = 12;
+                    break;
+                case TimeLineTreeLevel.Day:
+                    numberOfColumns = 31;
+                    break;
+                case TimeLineTreeLevel.Hour:
+                    numberOfColumns = 24;
+                    break;
+                case TimeLineTreeLevel.Minute:
+                    numberOfColumns = 60;
+                    break;
+                case TimeLineTreeLevel.Second:
+                    numberOfColumns = 60;
+                    break;
+                case TimeLineTreeLevel.Millisecond:
+                    numberOfColumns = 1000;
+                    break;
+                default:
+                    break;
+            }
+
+            var colWidth = Math.Floor(w / (numberOfColumns + 1));
+            if(colWidth < 2)
+            {
+                colWidth = 1;
+            }
+            _series.BarWidth = colWidth;
+            _selection.BarWidth = colWidth;
+
         }
 
         public MainWindowViewModel ViewModel

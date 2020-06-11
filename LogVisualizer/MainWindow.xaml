@@ -8,20 +8,30 @@
         xmlns:ctrl="urn:controlzex"
         xmlns:local="clr-namespace:LogVisualizer"
         xmlns:dom="clr-namespace:LogVisualizer.Domain"
+        xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
         mc:Ignorable="d"
-        Title="Log Visualizer" Height="450" Width="800" >
+                 
+        Title="Log Visualizer" Height="450" Width="800" TitleAlignment="Center">
+    <mah:MetroWindow.LeftWindowCommands>
+        <mah:WindowCommands>
+            <Button x:Name="FileOpen" ToolTip="Open a log file">
+                <iconPacks:PackIconMaterial Kind="FileDocument" Foreground="Yellow" />
+            </Button>
+            <Separator></Separator>
+            <Button x:Name="ZoomIn" ToolTip="Zoom in tot he next level of resolution">
+                <iconPacks:PackIconMaterial Kind="MagnifyPlus" Foreground="Yellow"></iconPacks:PackIconMaterial>
+            </Button>
+            <Button x:Name="ZoomOut" ToolTip="Zoom out to the previous level of resolution">
+                <iconPacks:PackIconMaterial Kind="MagnifyMinus" Foreground="Yellow"></iconPacks:PackIconMaterial>
+            </Button>
+        </mah:WindowCommands>
+    </mah:MetroWindow.LeftWindowCommands>
     <DockPanel LastChildFill="True">
-        <Menu DockPanel.Dock="Top">
-            <MenuItem Header="File">
-                <MenuItem Header="Open..." x:Name="FileOpen"></MenuItem>
-            </MenuItem>
-        </Menu>
         <ctrl:TabControlEx x:Name="tabs">
             <TabItem x:Name="ChartTab" Header="Chart">
                 <DockPanel LastChildFill="True">
                     <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" HorizontalAlignment="Center">
-                        <Button x:Name="ZoomIn">+</Button>
-                        <Button x:Name="ZoomOut">-</Button>
+                        
                     </StackPanel>
                     <oxy:PlotView x:Name="TimeLine" Background="AliceBlue"></oxy:PlotView>
                 </DockPanel>

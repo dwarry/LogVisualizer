@@ -140,9 +140,6 @@ namespace LogVisualizer.ViewModels
                     using (var stream = new FileStream(path, FileMode.Open, FileAccess.Read))
                     {
                         tree = treeBuilder.ParseDataAndBuildTree(stream);
-                        CurrentLevel = TimeLineTreeLevel.Year;
-                        SelectedTimestamp = null;
-                        ContextTimestamp = null;
                     }
 
                     if (AutoZoom)

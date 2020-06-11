@@ -10,8 +10,7 @@
         xmlns:dom="clr-namespace:LogVisualizer.Domain"
         xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
         mc:Ignorable="d"
-                 
-        Title="Log Visualizer" Height="450" Width="800" TitleAlignment="Center">
+        Title="Log Visualizer" Height="900" Width="1000" WindowStartupLocation="CenterScreen" TitleAlignment="Center">
     <mah:MetroWindow.LeftWindowCommands>
         <mah:WindowCommands>
             <Button x:Name="FileOpen" ToolTip="Open a log file" Style="{DynamicResource MahApps.Styles.Button.Square.Accent}">
@@ -27,95 +26,81 @@
         </mah:WindowCommands>
     </mah:MetroWindow.LeftWindowCommands>
     <DockPanel LastChildFill="True">
-        <ctrl:TabControlEx x:Name="tabs">
-            <TabItem x:Name="ChartTab" Header="Chart">
-                <DockPanel LastChildFill="True">
-                    <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" HorizontalAlignment="Center">
-                        
-                    </StackPanel>
-                    <oxy:PlotView x:Name="TimeLine" Background="AliceBlue"></oxy:PlotView>
-                </DockPanel>
-            </TabItem>
-            <TabItem Header="Log">
-                <DockPanel LastChildFill="True">
-                    <ListBox x:Name="LogItems">
-                        <ListBox.ItemContainerStyle>
-                            <Style TargetType="{x:Type ListBoxItem}">
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding Path=LogLevel}" Value="{x:Static dom:LogLevel.Debug}">
-                                        <Setter Property="Background">
-                                            <Setter.Value>
-                                                <SolidColorBrush Color="White"></SolidColorBrush>
-                                            </Setter.Value>
-                                        </Setter>
-                                        <Setter Property="Foreground">
-                                            <Setter.Value>
-                                                <SolidColorBrush Color="Gray"/>
-                                            </Setter.Value>
-                                        </Setter>
-                                    </DataTrigger>
-                                    <DataTrigger Binding="{Binding Path=LogLevel}" Value="{x:Static dom:LogLevel.Info}">
-                                        <Setter Property="Background">
-                                            <Setter.Value>
-                                                <SolidColorBrush Color="White"></SolidColorBrush>
-                                            </Setter.Value>
-                                        </Setter>
-                                        <Setter Property="Foreground">
-                                            <Setter.Value>
-                                                <SolidColorBrush Color="Black"/>
-                                            </Setter.Value>
-                                        </Setter>
-                                    </DataTrigger>
-                                    
-                                    <DataTrigger Binding="{Binding Path=LogLevel}" Value="{x:Static dom:LogLevel.Warning}">
-                                        <Setter Property="Background">
-                                            <Setter.Value>
-                                                <SolidColorBrush Color="LightGoldenrodYellow"></SolidColorBrush>
-                                            </Setter.Value>
-                                        </Setter>
-                                        <Setter Property="Foreground">
-                                            <Setter.Value>
-                                                <SolidColorBrush Color="Black"/>
-                                            </Setter.Value>
-                                        </Setter>
-                                    </DataTrigger>
-                                    <DataTrigger Binding="{Binding Path=LogLevel}" Value="{x:Static dom:LogLevel.Error}">
-                                        <Setter Property="Background">
-                                            <Setter.Value>
-                                                <SolidColorBrush Color="PaleVioletRed"></SolidColorBrush>
-                                            </Setter.Value>
-                                        </Setter>
-                                        <Setter Property="Foreground">
-                                            <Setter.Value>
-                                                <SolidColorBrush Color="LightYellow"/>
-                                            </Setter.Value>
-                                        </Setter>
-                                    </DataTrigger>
-                                    <DataTrigger Binding="{Binding Path=LogLevel}" Value="{x:Static dom:LogLevel.Fatal}">
-                                        <Setter Property="Background">
-                                            <Setter.Value>
-                                                <SolidColorBrush Color="Red"></SolidColorBrush>
-                                            </Setter.Value>
-                                        </Setter>
-                                        <Setter Property="Foreground">
-                                            <Setter.Value>
-                                                <SolidColorBrush Color="Yellow"/>
-                                            </Setter.Value>
-                                        </Setter>
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </ListBox.ItemContainerStyle>
-                        <ListBox.ItemTemplate>
-                            <DataTemplate>
-                                <TextBlock Text="{Binding Path=Message}"></TextBlock>
-                            </DataTemplate>
-                        </ListBox.ItemTemplate>
-                    </ListBox>
-                </DockPanel>
-            </TabItem>
-        </ctrl:TabControlEx>
-        <!--<mah:ProgressRing x:Name="Busy" Foreground="{DynamicResource Accent}" Visibility="Hidden"></mah:ProgressRing>-->
+        <oxy:PlotView x:Name="TimeLine" DockPanel.Dock="Top" Height="300" Background="AliceBlue"></oxy:PlotView>
+        <ListBox x:Name="LogItems">
+            <ListBox.ItemContainerStyle>
+                <Style TargetType="{x:Type ListBoxItem}">
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding Path=LogLevel}" Value="{x:Static dom:LogLevel.Debug}">
+                            <Setter Property="Background">
+                                <Setter.Value>
+                                    <SolidColorBrush Color="White"></SolidColorBrush>
+                                </Setter.Value>
+                            </Setter>
+                            <Setter Property="Foreground">
+                                <Setter.Value>
+                                    <SolidColorBrush Color="Gray"/>
+                                </Setter.Value>
+                            </Setter>
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding Path=LogLevel}" Value="{x:Static dom:LogLevel.Info}">
+                            <Setter Property="Background">
+                                <Setter.Value>
+                                    <SolidColorBrush Color="White"></SolidColorBrush>
+                                </Setter.Value>
+                            </Setter>
+                            <Setter Property="Foreground">
+                                <Setter.Value>
+                                    <SolidColorBrush Color="Black"/>
+                                </Setter.Value>
+                            </Setter>
+                        </DataTrigger>
+
+                        <DataTrigger Binding="{Binding Path=LogLevel}" Value="{x:Static dom:LogLevel.Warning}">
+                            <Setter Property="Background">
+                                <Setter.Value>
+                                    <SolidColorBrush Color="LightGoldenrodYellow"></SolidColorBrush>
+                                </Setter.Value>
+                            </Setter>
+                            <Setter Property="Foreground">
+                                <Setter.Value>
+                                    <SolidColorBrush Color="Black"/>
+                                </Setter.Value>
+                            </Setter>
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding Path=LogLevel}" Value="{x:Static dom:LogLevel.Error}">
+                            <Setter Property="Background">
+                                <Setter.Value>
+                                    <SolidColorBrush Color="PaleVioletRed"></SolidColorBrush>
+                                </Setter.Value>
+                            </Setter>
+                            <Setter Property="Foreground">
+                                <Setter.Value>
+                                    <SolidColorBrush Color="LightYellow"/>
+                                </Setter.Value>
+                            </Setter>
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding Path=LogLevel}" Value="{x:Static dom:LogLevel.Fatal}">
+                            <Setter Property="Background">
+                                <Setter.Value>
+                                    <SolidColorBrush Color="Red"></SolidColorBrush>
+                                </Setter.Value>
+                            </Setter>
+                            <Setter Property="Foreground">
+                                <Setter.Value>
+                                    <SolidColorBrush Color="Yellow"/>
+                                </Setter.Value>
+                            </Setter>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </ListBox.ItemContainerStyle>
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <TextBlock Text="{Binding Path=Message}" MaxHeight="250"></TextBlock>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
     </DockPanel>
 
 

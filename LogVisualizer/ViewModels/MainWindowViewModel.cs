@@ -136,14 +136,38 @@ namespace LogVisualizer.ViewModels
                 try
                 {
                     var treeBuilder = _logParseFactory.CreateParserForLogFile(path);
-
+                    TimelineTree tree;
                     using (var stream = new FileStream(path, FileMode.Open, FileAccess.Read))
                     {
-                        Tree = treeBuilder.ParseDataAndBuildTree(stream);
+                        tree = treeBuilder.ParseDataAndBuildTree(stream);
                         CurrentLevel = TimeLineTreeLevel.Year;
                         SelectedTimestamp = null;
                         ContextTimestamp = null;
                     }
+
+                    if (AutoZoom)
+                    {
+                        var lvl = TimeLineTreeLevel.Year;
+                        var tlcs = tree.CountsAtLevel(lvl, null).ToArray();
+                        DateTime? ts = null;
+                        while (lvl != TimeLineTreeLevel.Second && tlcs.Length == 1)
+                        {
+                            ts = tlcs[0].Date;
+                            lvl = lvl.NextLevel();
+                            tlcs = tree.CountsAtLevel(lvl, ts).ToArray();
+                        }
+                        Tree = tree;
+                        CurrentLevel = lvl;
+                        ContextTimestamp = ts;
+                    }
+                    else
+                    {
+                        Tree = tree;
+                        CurrentLevel = TimeLineTreeLevel.Year;
+                        ContextTimestamp = null;
+                    }
+                    SelectedTimestamp = null;
+
                     _path = path;
                 }
                 finally

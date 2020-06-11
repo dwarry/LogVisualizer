@@ -96,7 +96,10 @@ namespace LogVisualizer
                 this.BindCommand(this.ViewModel, vm => vm.ZoomIn, vw => vw.ZoomIn);
                 this.BindCommand(this.ViewModel, vm => vm.ZoomOut, vw => vw.ZoomOut);
 
-                ViewModel.WhenAnyValue(x => x.DateRange).Subscribe(_ => SetupSeries()).DisposeWith(d);
+                ViewModel.WhenAnyValue(x => x.DateRange)
+                    .Throttle(TimeSpan.FromMilliseconds(50))
+                    .ObserveOn(RxApp.MainThreadScheduler)
+                    .Subscribe(_ => SetupSeries()).DisposeWith(d);
 
                 TimeLine.Events().SizeChanged
                 .Throttle(TimeSpan.FromSeconds(0.1))

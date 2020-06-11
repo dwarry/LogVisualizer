@@ -14,15 +14,15 @@
         Title="Log Visualizer" Height="450" Width="800" TitleAlignment="Center">
     <mah:MetroWindow.LeftWindowCommands>
         <mah:WindowCommands>
-            <Button x:Name="FileOpen" ToolTip="Open a log file">
-                <iconPacks:PackIconMaterial Kind="FileDocument" Foreground="Yellow" />
+            <Button x:Name="FileOpen" ToolTip="Open a log file" Style="{DynamicResource MahApps.Styles.Button.Square.Accent}">
+                <iconPacks:PackIconMaterial Kind="FileDocument"  />
             </Button>
             <Separator></Separator>
-            <Button x:Name="ZoomIn" ToolTip="Zoom in tot he next level of resolution">
-                <iconPacks:PackIconMaterial Kind="MagnifyPlus" Foreground="Yellow"></iconPacks:PackIconMaterial>
+            <Button x:Name="ZoomIn" ToolTip="Zoom in to the next level of resolution" Style="{DynamicResource MahApps.Styles.Button}">
+                <iconPacks:PackIconMaterial Kind="MagnifyPlus" />
             </Button>
-            <Button x:Name="ZoomOut" ToolTip="Zoom out to the previous level of resolution">
-                <iconPacks:PackIconMaterial Kind="MagnifyMinus" Foreground="Yellow"></iconPacks:PackIconMaterial>
+            <Button x:Name="ZoomOut" ToolTip="Zoom out to the previous level of resolution" Style="{DynamicResource MahApps.Styles.Button}">
+                <iconPacks:PackIconMaterial Kind="MagnifyMinus" />
             </Button>
         </mah:WindowCommands>
     </mah:MetroWindow.LeftWindowCommands>

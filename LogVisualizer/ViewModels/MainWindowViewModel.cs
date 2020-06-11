@@ -225,21 +225,17 @@ namespace LogVisualizer.ViewModels
 
 
         [Reactive]
-        public TimeLineTreeLevel CurrentLevel
-        {
-            get; set;
-        }
+        public TimeLineTreeLevel CurrentLevel { get; set; }
 
         [Reactive]
         public DateTime? ContextTimestamp { get; private set; }
 
 
         [Reactive]
-        public DateTime? SelectedTimestamp
-        {
-            get; set;
-        }
+        public DateTime? SelectedTimestamp { get; set; }
 
+        [Reactive]
+        public bool AutoZoom { get; set; } = true;
 
         public extern IReadOnlyCollection<TimeLineCount> Data { [ObservableAsProperty] get; }
 
